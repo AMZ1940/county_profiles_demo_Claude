@@ -127,23 +127,45 @@
         esriId.registerOAuthInfos([info]);
         const sharingUrl = info.portalUrl + "/sharing";
 
+        const onSignedIn = () => {
+          const portal = new Portal({ url: CONFIG.PORTAL_URL, authMode: "immediate" });
+          return portal.load()
+            .then(() => showApp(portal.user ? (portal.user.fullName || portal.user.username) : "Signed in"))
+            .catch(() => showApp("Signed in"));
+        };
+        const resetButton = () => {
+          btnSignIn.disabled = false;
+          btnSignIn.textContent = "Sign in with ArcGIS";
+        };
+        // Backup when embedded: open the whole profile in a new browser tab
+        const showNewTabOption = () => {
+          if (!inIframe || $("newTabLink")) return;
+          $("gateMsg").insertAdjacentHTML("afterend",
+            `<p style="font-size:13px">Pop-up didn't open? <a id="newTabLink" href="${window.location.href.split("#")[0]}" target="_blank" rel="noopener">Open the profile in a new tab</a></p>`);
+        };
+
         btnSignIn.onclick = () => {
+          gateMsg("");
           btnSignIn.disabled = true;
-          btnSignIn.textContent = "Redirecting to ArcGIS…";
-          esriId.getCredential(sharingUrl).catch((e) => {
-            btnSignIn.disabled = false;
-            btnSignIn.textContent = "Sign in with ArcGIS";
-            gateMsg(e && e.message ? e.message : "Sign-in was cancelled.");
-          });
+          btnSignIn.textContent = inIframe ? "Complete sign-in in the pop-up…" : "Redirecting to ArcGIS…";
+          // If nothing happens (pop-up blocked, window closed), let the user try again
+          const stuck = setTimeout(() => {
+            resetButton();
+            if (inIframe) { gateMsg("Still waiting on the ArcGIS sign-in window. If it was blocked, allow pop-ups and try again."); showNewTabOption(); }
+          }, 20000);
+          esriId.getCredential(sharingUrl)
+            .then(() => { clearTimeout(stuck); return onSignedIn(); })
+            .catch((e) => {
+              clearTimeout(stuck);
+              console.warn("ArcGIS sign-in error", e);
+              resetButton();
+              gateMsg(e && e.message ? e.message : "Sign-in was cancelled.");
+              showNewTabOption();
+            });
         };
 
         esriId.checkSignInStatus(sharingUrl)
-          .then(() => {
-            const portal = new Portal({ url: CONFIG.PORTAL_URL, authMode: "immediate" });
-            return portal.load()
-              .then(() => showApp(portal.user ? (portal.user.fullName || portal.user.username) : "Signed in"))
-              .catch(() => showApp("Signed in"));
-          })
+          .then(onSignedIn)
           .catch(() => {
             btnSignIn.disabled = false;
             btnSignIn.textContent = "Sign in with ArcGIS";
