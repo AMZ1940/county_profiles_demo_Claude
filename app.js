@@ -113,11 +113,16 @@
     window.require(["esri/identity/OAuthInfo", "esri/identity/IdentityManager", "esri/portal/Portal"],
       (OAuthInfo, esriId, Portal) => {
         esriIdRef = esriId;
+        // Inside an iframe (e.g. Experience Builder Embed widget) the ArcGIS sign-in page
+        // can't be shown in the frame, so sign in through a pop-up window instead.
+        let inIframe = false;
+        try { inIframe = window.self !== window.top; } catch (e) { inIframe = true; }
         const info = new OAuthInfo({
           appId: CONFIG.CLIENT_ID,
           portalUrl: CONFIG.PORTAL_URL,
-          popup: false,          // full-page redirect back to this page
-          flowType: "auto"       // authorization code + PKCE
+          popup: inIframe,                                           // pop-up when embedded, full-page redirect otherwise
+          popupCallbackUrl: new URL("oauth-callback.html", window.location.href).href,
+          flowType: "auto"                                           // authorization code + PKCE
         });
         esriId.registerOAuthInfos([info]);
         const sharingUrl = info.portalUrl + "/sharing";

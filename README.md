@@ -2,7 +2,7 @@
 
 A fictional county profile for **Briarwood County, State of Westhaven**. All the data is made up. Users must sign in with ArcGIS (OAuth 2.0) before the profile is shown.
 
-Live URL: https://amz1940.github.io/county_profiles_demo/
+Live URL: https://amz1940.github.io/county_profiles_demo_Claude/
 
 ## Files
 | File | What it does |
@@ -14,15 +14,16 @@ Live URL: https://amz1940.github.io/county_profiles_demo/
 
 ## One-time ArcGIS setup (required)
 1. In ArcGIS Online, open the OAuth 2.0 credentials item with client ID `w9VaoRCHch2gIU1d` and go to **Settings → Redirect URLs**.
-2. Add these redirect URLs exactly as written:
-   - `https://amz1940.github.io/county_profiles_demo/`
-   - `https://amz1940.github.io/county_profiles_demo/index.html`
+2. Add these redirect URLs exactly as written (the third one is needed when the page is embedded in Experience Builder):
+   - `https://amz1940.github.io/county_profiles_demo_Claude/`
+   - `https://amz1940.github.io/county_profiles_demo_Claude/index.html`
+   - `https://amz1940.github.io/county_profiles_demo_Claude/oauth-callback.html`
 3. Save.
 
 If your organization signs in through its own URL (for example `https://yourorg.maps.arcgis.com`) or through ArcGIS Enterprise, change `PORTAL_URL` at the top of `app.js`.
 
 ## Publish to GitHub Pages
-1. Upload `index.html`, `styles.css`, `data.js`, `app.js` and this README to the root of the `county_profiles_demo` repo.
+1. Upload `index.html`, `oauth-callback.html`, `styles.css`, `data.js`, `app.js` and this README to the root (not inside a subfolder) of the `county_profiles_demo_Claude` repo.
 2. Go to **Settings → Pages**, set the source to *Deploy from a branch*, and choose `main` / root.
 3. Wait about a minute, then open the URL above. You should see the sign-in screen.
 
